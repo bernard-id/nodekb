@@ -50,6 +50,10 @@ router.post('/add', function(req,res){
 // Load Edit Form
 router.get('/edit/:id', ensureAuthenticated, function(req, res){
   Article.findById(req.params.id, function(err, article){
+    if(article.author != req.user._id){
+      req.flash('danger', 'Not Authorized');
+      res.redirect('/');
+    }
     res.render('edit_article', {
       title:"Edit Article",
       article: article
@@ -79,9 +83,8 @@ router.post('/edit/:id', ensureAuthenticated, function(req,res){
 });
 
 // Delete Article
-router.delete('/:id', ensureAuthenticated, function(req, res){
+router.delete('/:id', function(req, res){
   if(!req.user._id){
-    res.redirect('/');
     res.status(500).send();
   }
 
@@ -90,7 +93,6 @@ router.delete('/:id', ensureAuthenticated, function(req, res){
   Article.findById(req.params.id, function(err, article){
     if(article.author != req.user._id){
       res.status(500).send();
-      res.redirect('/');
     } else {
       Article.remove(query, function(err){
         if(err){
